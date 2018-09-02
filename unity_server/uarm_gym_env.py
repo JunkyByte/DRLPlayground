@@ -6,23 +6,24 @@ import cv2
 import numpy as np
 from gym import spaces
 
-from easyinference.utils.context_timer import ContextTimer
-from unity_server.server import UnityInterface
-
-EXECUTABLE_PATH = ""
-NUM_ACTIONS = 6
+from context_timer import ContextTimer
+from server import UnityInterface
+from subprocess import check_output
 
 
-class Wrapper:
-    pass
+def get_pid(name):
+    try:
+        return str(check_output(["pidof", "-s", name]))[2:-3]
+    except:
+        return False
 
 
-class CustomUnityEnv(Wrapper):
+class CustomUnityEnv():
     GAMES_BETWEEN_RESTARTS = 50
-    EXECUTABLE_PATH = "C:\\Users\\Alex Thiel\\Google Drive\\Project - 2018 - Deep Reinforcement Learning\\DRL_Playground\\Build\\RobotGame.exe"
+    EXECUTABLE_PATH = "/home/adryw/Documents/DRL_Playground/Build/test_build.x86_64"
 
     observation_space = spaces.Box(0, 0, shape=(84, 84, 1))
-    action_space = spaces.Discrete(n=NUM_ACTIONS)
+    action_space = spaces.Discrete(n=6)
 
     def __init__(self):
         self.steps_since_restart = 0
@@ -38,23 +39,7 @@ class CustomUnityEnv(Wrapper):
         self._open_unity()
         self.server = UnityInterface("localhost", 1234)
 
-    @property
-    def env(self):
-        # This is for fooling the get_wrapper_by_name function
-        parent = self
-
-        class Monitor:
-            def get_total_steps(self):
-                return parent.total_steps_ever
-
-            def get_episode_rewards(self):
-                return parent.episode_rewards
-
-        return Monitor()
-
     def step(self, action):
-        """Return observation, reward, done, info
-        info is unused"""
         self.steps_since_restart += 1
         self.total_steps_ever += 1
 
@@ -110,19 +95,7 @@ class CustomUnityEnv(Wrapper):
     def _kill_unity(self):
         process_name = Path(self.EXECUTABLE_PATH).name
         print("Killing Unity process", process_name)
-        os.system("taskkill /f /im " + process_name)
-
-
-def benchmark_spec(*args, **kwargs):
-    class Task:
-        max_timesteps = 40000000
-
-    class Benchmark:
-        tasks = [Task(), Task(), Task(), Task()]
-
-    return Benchmark()
-
-
-def make(*args, **kwargs):
-    print("Getting environment!")
-    return CustomUnityEnv()
+        # os.system("taskkill /f /im " + process_name)
+        id = get_pid(process_name)
+        if id:
+            os.system("kill " + id)

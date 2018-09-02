@@ -12,8 +12,10 @@ from unity_server.server import UnityInterface
 EXECUTABLE_PATH = ""
 NUM_ACTIONS = 3
 
+
 class Wrapper:
     pass
+
 
 class CustomUnityEnv(Wrapper):
     MIN_STEPS_BETWEEN_RESTARTS = 540000
@@ -35,14 +37,15 @@ class CustomUnityEnv(Wrapper):
         self._open_unity()
         self.server = UnityInterface("localhost", 1234)
 
-
     @property
     def env(self):
         # This is for fooling the get_wrapper_by_name function
         parent = self
+
         class Monitor:
             def get_total_steps(self):
                 return parent.total_steps_ever
+
             def get_episode_rewards(self):
                 return parent.episode_rewards
         return Monitor()

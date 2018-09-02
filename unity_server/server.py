@@ -5,7 +5,7 @@ from base64 import b64decode
 import cv2
 import numpy as np
 
-from easyinference.utils.context_timer import ContextTimer
+from context_timer import ContextTimer
 
 
 class UnityInterface:
@@ -55,7 +55,8 @@ class UnityInterface:
                 return self._read_message()
 
             main_data += data
-            if "}" in data: break
+            if "}" in data:
+                break
 
         # BUG FIX: If there was extra data, strip it out
         # main_data[0] != '{' and main_data[-1] != '}'
@@ -104,6 +105,7 @@ class UnityInterface:
     def disconnect(self):
         self.connection.close()
 
+
 if __name__ == "__main__":
     from time import sleep, time
     from random import choice
@@ -116,9 +118,10 @@ if __name__ == "__main__":
     client.send_reset()
     is_over, image, score = client.get_state()
     while True:
-        cv2.imshow("image", image)
+        #cv2.imshow("image", image)
         key = cv2.waitKey(1)
-        if key == -1: continue
+        if key == -1:
+            continue
 
         if key == ord('c'):
             client.send_state(choice([0, 1, 2, 3, 4, 5]))
